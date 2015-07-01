@@ -3,4 +3,5 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_tracks">Top Tracks</string>
+    <string name="no_results">Sorry, no tracks were found for this artist.</string>
 </resources>
