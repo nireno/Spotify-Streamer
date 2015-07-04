@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import kaaes.spotify.webapi.android.models.Artist;
@@ -23,6 +24,10 @@ public class ArtistListAdapter extends ArrayAdapter<Artist>{
 
     public ArtistListAdapter(Context context, List<Artist> artists) {
         super(context, 0, artists);
+    }
+
+    public ArtistListAdapter(Context context){
+        this(context, new ArrayList<Artist>());
     }
 
 

@@ -8,8 +8,11 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="48sp"
-        android:id="@+id/etArtist"
+        android:id="@+id/searchArtistEditText"
         tools:text="Coldplay"
+        android:singleLine="true"
+        android:imeOptions="actionDone"
+        android:hint="Search by artist..."
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
@@ -18,7 +21,7 @@
         android:id="@+id/lvArtists"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/etArtist"
+        android:layout_below="@+id/searchArtistEditText"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
