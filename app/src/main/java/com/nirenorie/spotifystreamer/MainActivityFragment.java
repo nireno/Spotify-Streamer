@@ -64,7 +64,7 @@ public class MainActivityFragment extends Fragment {
                 boolean handled = false;
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     String name = v.getText().toString();
-                    if (name.equals("")) {
+                    if (!name.equals("")) {
                         loader.loadArtists(name);
                     }
                     handled = true;
