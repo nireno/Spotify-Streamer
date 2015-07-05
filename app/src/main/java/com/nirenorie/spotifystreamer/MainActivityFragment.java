@@ -1,6 +1,5 @@
 package com.nirenorie.spotifystreamer;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,7 +13,6 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
 
 import java.util.List;
 
@@ -33,9 +31,15 @@ import retrofit.client.Response;
  */
 public class MainActivityFragment extends Fragment {
     private final String CLASS_TAG = MainActivityFragment.class.getSimpleName();
-    private final int IMAGE_WIDTH = ArtistListAdapter.IMAGE_WIDTH;
-    ArtistLoader loader;
+    private final int IMAGE_WIDTH = 128;
+    private ArtistListAdapter adapter;
     public MainActivityFragment() {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        adapter = new ArtistListAdapter(getActivity());
     }
 
     @Override
@@ -43,30 +47,27 @@ public class MainActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.fragment_main, container, false);
-        loader = new ArtistLoader(getActivity());
         ListView listViewArtists = (ListView)v.findViewById(R.id.lvArtists);
 
-        listViewArtists.setAdapter(loader.getAdapter());
+        listViewArtists.setAdapter(adapter);
 
         listViewArtists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(getActivity(), TracksActivity.class);
-                intent.putExtra(Intent.EXTRA_TEXT, loader.getAdapter().getItem(i).id);
+                intent.putExtra(Intent.EXTRA_TEXT, adapter.getItem(i).id);
                 startActivity(intent);
             }
         });
 
         EditText editText = (EditText) v.findViewById(R.id.searchArtistEditText);
-        editText.setOnEditorActionListener(new OnEditorActionListener() {
+        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 boolean handled = false;
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     String name = v.getText().toString();
-                    if (!name.equals("")) {
-                        loader.loadArtists(name);
-                    }
+                    loadArtists(name);
                     handled = true;
                 }
                 return handled;
@@ -77,29 +78,16 @@ public class MainActivityFragment extends Fragment {
         /*TODO: List does not reload when screen orientation changes */
     }
 
-
-    private class ArtistLoader {
-        private ArtistListAdapter adapter;
-
-        public ArtistLoader(Context context){
-            adapter = new ArtistListAdapter(context);
-        }
-
-        public ArtistListAdapter getAdapter(){
-            return adapter;
-        }
-
-
-
-        private void loadArtists(String name){
-            SpotifyApi api = new SpotifyApi();
-            SpotifyService service = api.getService();
+    private void loadArtists(String name) {
+        SpotifyApi api = new SpotifyApi();
+        SpotifyService service = api.getService();
+        if (!name.equals("")) {
             service.searchArtists(name, new Callback<ArtistsPager>() {
                 @Override
                 public void success(ArtistsPager artistsPager, Response response) {
                     List<Artist> artists = artistsPager.artists.items;
-                    for(Artist a: artists){
-                        if(a.images.size() > 0){
+                    for (Artist a : artists) {
+                        if (a.images.size() > 0) {
                             Image image = Helper.getOptimalImage(a.images, IMAGE_WIDTH);
                             a.images.clear();
                             a.images.add(image);
@@ -116,5 +104,4 @@ public class MainActivityFragment extends Fragment {
             });
         }
     }
-
 }
