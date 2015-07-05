@@ -1,5 +1,6 @@
 package com.nirenorie.spotifystreamer;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,17 +11,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
-import kaaes.spotify.webapi.android.models.Image;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -31,7 +36,7 @@ import retrofit.client.Response;
  */
 public class MainActivityFragment extends Fragment {
     private final String CLASS_TAG = MainActivityFragment.class.getSimpleName();
-    private final int IMAGE_WIDTH = 128;
+    private int IMAGE_SIZE;
     private ArtistListAdapter adapter;
     public MainActivityFragment() {
     }
@@ -40,6 +45,7 @@ public class MainActivityFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         adapter = new ArtistListAdapter(getActivity());
+        IMAGE_SIZE = Integer.parseInt(getString(R.string.thumbnail_size));
     }
 
     @Override
@@ -86,15 +92,18 @@ public class MainActivityFragment extends Fragment {
                 @Override
                 public void success(ArtistsPager artistsPager, Response response) {
                     List<Artist> artists = artistsPager.artists.items;
-                    for (Artist a : artists) {
-                        if (a.images.size() > 0) {
-                            Image image = Helper.getOptimalImage(a.images, IMAGE_WIDTH);
-                            a.images.clear();
-                            a.images.add(image);
+                    List<ArtistListItem> items = new ArrayList<>();
+                    for (Artist artist : artists) {
+                        ArtistListItem item = new ArtistListItem();
+                        item.id = artist.id;
+                        item.name = artist.name;
+                        if (artist.images.size() > 0) {
+                            item.imageUrl = Helper.getOptimalImage(artist.images, IMAGE_SIZE).url;
                         }
+                        items.add(item);
                     }
                     adapter.clear();
-                    adapter.addAll(artists);
+                    adapter.addAll(items);
                 }
 
                 @Override
@@ -102,6 +111,46 @@ public class MainActivityFragment extends Fragment {
                     Log.d(CLASS_TAG, "Spotify API artist-search error:" + error.getMessage());
                 }
             });
+        }
+    }
+
+    private class ArtistListItem {
+        public String id;
+        public String name;
+        public String imageUrl;
+    }
+
+    private class ArtistListAdapter extends ArrayAdapter<ArtistListItem> {
+        public ArtistListAdapter(Context context, List<ArtistListItem> artists) {
+            super(context, 0, artists);
+        }
+
+        public ArtistListAdapter(Context context) {
+            this(context, new ArrayList<ArtistListItem>());
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+            ArtistListItem artist = getItem(position);
+
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_artist, parent, false);
+            }
+
+            ImageView artistImageView = (ImageView) convertView.findViewById(R.id.artistImageView);
+            if (artist.imageUrl != null) {
+            /*  It's unclear that I need to ensure the optimal image is in the 0th position when adding Artists to the Adapter
+            * TODO: Follow example in TracksActivityFragment to setup an Adapter of ArtistListItems that only stores the url of the appropriately sized image */
+                Picasso.with(getContext()).load(artist.imageUrl).resize(IMAGE_SIZE, IMAGE_SIZE).centerCrop().into(artistImageView);
+            } else {
+                Picasso.with(getContext()).load(R.drawable.placeholder_128x128).resize(IMAGE_SIZE, IMAGE_SIZE).into(artistImageView);
+            }
+
+            TextView artistTextView = (TextView) convertView.findViewById(R.id.artistTextView);
+            artistTextView.setText(artist.name);
+
+            return convertView;
         }
     }
 }
