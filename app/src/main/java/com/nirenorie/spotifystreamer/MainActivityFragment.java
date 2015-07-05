@@ -1,6 +1,7 @@
 package com.nirenorie.spotifystreamer;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -45,6 +47,16 @@ public class MainActivityFragment extends Fragment {
         ListView listViewArtists = (ListView)v.findViewById(R.id.lvArtists);
 
         listViewArtists.setAdapter(loader.getAdapter());
+
+        listViewArtists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(getActivity(), TracksActivity.class);
+                intent.putExtra(Intent.EXTRA_TEXT, loader.getAdapter().getItem(i).id);
+                startActivity(intent);
+            }
+        });
+
         EditText editText = (EditText) v.findViewById(R.id.searchArtistEditText);
         editText.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
@@ -52,8 +64,8 @@ public class MainActivityFragment extends Fragment {
                 boolean handled = false;
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     String name = v.getText().toString();
-                    if(name != ""){
-                        loader.loadArtists(v.getText().toString());
+                    if (name.equals("")) {
+                        loader.loadArtists(name);
                     }
                     handled = true;
                 }
@@ -62,6 +74,7 @@ public class MainActivityFragment extends Fragment {
         });
         return v;
 
+        /*TODO: List does not reload when screen orientation changes */
     }
 
 
@@ -76,18 +89,7 @@ public class MainActivityFragment extends Fragment {
             return adapter;
         }
 
-        private Image getOptimalImage(List<Image> images){
-            int lowest = images.get(0).width;
-            Image image = images.get(0);
-            for(Image i : images){
-                if (i.width < IMAGE_WIDTH) continue;
-                if(i.width - IMAGE_WIDTH < lowest){
-                    lowest = i.width;
-                    image = i;
-                }
-            }
-            return image;
-        }
+
 
         private void loadArtists(String name){
             SpotifyApi api = new SpotifyApi();
@@ -98,7 +100,7 @@ public class MainActivityFragment extends Fragment {
                     List<Artist> artists = artistsPager.artists.items;
                     for(Artist a: artists){
                         if(a.images.size() > 0){
-                            Image image = getOptimalImage(a.images);
+                            Image image = Helper.getOptimalImage(a.images, IMAGE_WIDTH);
                             a.images.clear();
                             a.images.add(image);
                         }

@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="wrap_content">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
 
     <ImageView
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
         android:id="@+id/artistImageView"
-        android:background="@drawable/placeholder"
-        android:layout_gravity="center_vertical" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginBottom="4dp"
+        android:layout_marginTop="4dp"
+        tools:src="@drawable/placeholder_128x128" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -20,20 +21,19 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/artistTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/artistTextView"
             tools:text="A Sky Full of Stars" />
 
         <TextView
-            android:id="@+id/textView"
-            tools:text="Ghost Stories"
-            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/albumTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp" />
+            android:layout_marginLeft="16dp"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            tools:text="Ghost Stories" />
 
     </LinearLayout>
 
