@@ -34,8 +34,8 @@ import retrofit.client.Response;
  */
 public class TracksActivityFragment extends Fragment {
     private final String CLASS_TAG = this.getClass().getSimpleName();
-    private final int IMAGE_SIZE = 128;
     String artistId = "";
+    private int IMAGE_SIZE;
     private TrackListAdapter adapter;
     private View view;
     public TracksActivityFragment() {
@@ -47,6 +47,7 @@ public class TracksActivityFragment extends Fragment {
         adapter = new TrackListAdapter(getActivity());
         Intent intent = getActivity().getIntent();
         artistId = intent.getStringExtra(Intent.EXTRA_TEXT);
+        IMAGE_SIZE = Integer.parseInt(getString(R.string.thumbnail_size));
     }
 
     @Override
@@ -130,7 +131,7 @@ public class TracksActivityFragment extends Fragment {
             if (t.imageUrl != null) {
                 Picasso.with(getContext()).load(t.imageUrl).resize(IMAGE_SIZE, IMAGE_SIZE).centerCrop().into(iv);
             } else {
-                Picasso.with(getContext()).load(R.drawable.placeholder_128x128).into(iv);
+                Picasso.with(getContext()).load(R.drawable.placeholder_128x128).resize(IMAGE_SIZE, IMAGE_SIZE).into(iv);
             }
 
             return convertView;
