@@ -2,7 +2,9 @@ package com.nirenorie.spotifystreamer;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -68,7 +70,10 @@ public class TracksActivityFragment extends Fragment {
         SpotifyService service = api.getService();
         Map<String, Object> options = new HashMap<>();
 
-        options.put("country", "US"); /* TODO: Make country a user preference */
+        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String countryCode = p.getString(getString(R.string.pref_country_key), getString(R.string.pref_country_default));
+
+        options.put("country", countryCode);
         service.getArtistTopTrack(artistId, options, new Callback<Tracks>() {
             @Override
             public void success(Tracks tracks, Response response) {

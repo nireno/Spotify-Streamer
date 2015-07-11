@@ -5,4 +5,8 @@
     <string name="title_activity_tracks">Top Tracks</string>
     <string name="no_results">Sorry, no tracks were found for this artist.</string>
     <string name="thumbnail_size">200</string>
+    <string name="pref_country_key">COUNTRY</string>
+    <string name="pref_country_title">Country</string>
+    <string name="pref_country_default">US</string>
+    <string name="title_activity_settings">SettingsActivity</string>
 </resources>
