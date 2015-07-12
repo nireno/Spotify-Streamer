@@ -19,7 +19,6 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
@@ -40,7 +39,16 @@ public class TracksActivityFragment extends Fragment {
     private int IMAGE_SIZE;
     private TrackListAdapter adapter;
     private View view;
+    private ArrayList<SpotifyTrack> topTracks = new ArrayList<>();
+    private String KEY_TRACKS = "tracks";
+
     public TracksActivityFragment() {
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList(KEY_TRACKS, topTracks);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -59,9 +67,21 @@ public class TracksActivityFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_tracks, container);
         ListView lv = (ListView) view.findViewById(R.id.tracksListView);
 
-        lv.setAdapter(adapter);
-        loadTracks(artistId);
+        if (savedInstanceState == null || !savedInstanceState.containsKey(KEY_TRACKS)) {
+            loadTracks(artistId);
+        } else {
+            topTracks = savedInstanceState.getParcelableArrayList(KEY_TRACKS);
+            adapter.addAll(topTracks);
 
+            TextView noTracksTextView = (TextView) view.findViewById(R.id.noTracksTextView);
+            if (topTracks.size() > 0) {
+                noTracksTextView.setVisibility(View.INVISIBLE);
+            } else {
+                noTracksTextView.setVisibility(View.VISIBLE);
+            }
+        }
+
+        lv.setAdapter(adapter);
         return view;
     }
 
@@ -77,21 +97,19 @@ public class TracksActivityFragment extends Fragment {
         service.getArtistTopTrack(artistId, options, new Callback<Tracks>() {
             @Override
             public void success(Tracks tracks, Response response) {
-                List<TrackListItem> items = new ArrayList<>();
-
+                topTracks.clear();
                 for (Track track : tracks.tracks) {
-                    TrackListItem item = new TrackListItem();
-                    item.name = track.name;
-                    item.album = track.album.name;
+                    String imageUrl = null;
                     if (track.album.images.size() > 0) {
-                        item.imageUrl = Helper.getOptimalImage(track.album.images, IMAGE_SIZE).url;
+                        imageUrl = Helper.getOptimalImage(track.album.images, IMAGE_SIZE).url;
                     }
-                    items.add(item);
+                    SpotifyTrack spotifyTrack = new SpotifyTrack(track.name, track.album.name, imageUrl);
+                    topTracks.add(spotifyTrack);
                 }
-                adapter.addAll(items);
+                adapter.addAll(topTracks);
 
                 TextView noTracksTextView = (TextView) view.findViewById(R.id.noTracksTextView);
-                if (items.size() > 0) {
+                if (topTracks.size() > 0) {
                     noTracksTextView.setVisibility(View.INVISIBLE);
                 } else {
                     noTracksTextView.setVisibility(View.VISIBLE);
@@ -105,13 +123,8 @@ public class TracksActivityFragment extends Fragment {
         });
     }
 
-    private class TrackListItem {
-        public String name;
-        public String album;
-        public String imageUrl;
-    }
 
-    private class TrackListAdapter extends ArrayAdapter<TrackListItem> {
+    private class TrackListAdapter extends ArrayAdapter<SpotifyTrack> {
         public TrackListAdapter(Context context) {
             this(context, 0);
         }
@@ -122,7 +135,7 @@ public class TracksActivityFragment extends Fragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            TrackListItem t = getItem(position);
+            SpotifyTrack t = getItem(position);
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_track, parent, false);
             }
