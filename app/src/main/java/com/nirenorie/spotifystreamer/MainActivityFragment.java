@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -104,6 +105,10 @@ public class MainActivityFragment extends Fragment {
                     }
                     adapter.clear();
                     adapter.addAll(items);
+
+                    if(items.size() == 0) {
+                        Toast.makeText(getActivity(), getText(R.string.no_results_artist), Toast.LENGTH_SHORT).show();
+                    }
                 }
 
                 @Override
