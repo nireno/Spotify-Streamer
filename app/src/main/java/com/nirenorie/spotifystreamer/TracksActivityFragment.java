@@ -35,12 +35,14 @@ import retrofit.client.Response;
  */
 public class TracksActivityFragment extends Fragment {
     private final String CLASS_TAG = this.getClass().getSimpleName();
-    String artistId = "";
+    private String artistId = "";
     private int IMAGE_SIZE;
     private TrackListAdapter adapter;
     private View view;
     private ArrayList<SpotifyTrack> topTracks = new ArrayList<>();
     private String KEY_TRACKS = "tracks";
+    private TextView emptyListView;
+    private ListView tracksListView;
 
     public TracksActivityFragment() {
     }
@@ -65,23 +67,19 @@ public class TracksActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         view = inflater.inflate(R.layout.fragment_tracks, container);
-        ListView lv = (ListView) view.findViewById(R.id.tracksListView);
+        tracksListView = (ListView) view.findViewById(R.id.tracksListView);
+        tracksListView.setAdapter(adapter);
+
+        emptyListView = (TextView) view.findViewById(R.id.noTracksTextView);
 
         if (savedInstanceState == null || !savedInstanceState.containsKey(KEY_TRACKS)) {
             loadTracks(artistId);
         } else {
             topTracks = savedInstanceState.getParcelableArrayList(KEY_TRACKS);
             adapter.addAll(topTracks);
-
-            TextView noTracksTextView = (TextView) view.findViewById(R.id.noTracksTextView);
-            if (topTracks.size() > 0) {
-                noTracksTextView.setVisibility(View.INVISIBLE);
-            } else {
-                noTracksTextView.setVisibility(View.VISIBLE);
-            }
+            tracksListView.setEmptyView(emptyListView);
         }
 
-        lv.setAdapter(adapter);
         return view;
     }
 
@@ -108,12 +106,8 @@ public class TracksActivityFragment extends Fragment {
                 }
                 adapter.addAll(topTracks);
 
-                TextView noTracksTextView = (TextView) view.findViewById(R.id.noTracksTextView);
-                if (topTracks.size() > 0) {
-                    noTracksTextView.setVisibility(View.INVISIBLE);
-                } else {
-                    noTracksTextView.setVisibility(View.VISIBLE);
-                }
+                /* setEmptyView here to avoid brief flash of the "no tracks found" message*/
+                tracksListView.setEmptyView(emptyListView);
             }
 
             @Override
