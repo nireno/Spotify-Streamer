@@ -37,9 +37,18 @@ import retrofit.client.Response;
  */
 public class MainActivityFragment extends Fragment {
     private final String CLASS_TAG = MainActivityFragment.class.getSimpleName();
+    private final String KEY_ARTISTS = "artists";
     private int IMAGE_SIZE;
     private ArtistListAdapter adapter;
+    private ArrayList<SpotifyArtist> artists = new ArrayList<>();
+
     public MainActivityFragment() {
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(KEY_ARTISTS, artists);
     }
 
     @Override
@@ -80,9 +89,13 @@ public class MainActivityFragment extends Fragment {
                 return handled;
             }
         });
-        return v;
 
-        /*TODO: List does not reload when screen orientation changes */
+        if (savedInstanceState != null && savedInstanceState.containsKey(KEY_ARTISTS)) {
+            artists = savedInstanceState.getParcelableArrayList(KEY_ARTISTS);
+            adapter.addAll(artists);
+        }
+
+        return v;
     }
 
     private void loadArtists(String name) {
@@ -92,21 +105,19 @@ public class MainActivityFragment extends Fragment {
             service.searchArtists(name, new Callback<ArtistsPager>() {
                 @Override
                 public void success(ArtistsPager artistsPager, Response response) {
-                    List<Artist> artists = artistsPager.artists.items;
-                    List<ArtistListItem> items = new ArrayList<>();
-                    for (Artist artist : artists) {
-                        ArtistListItem item = new ArtistListItem();
-                        item.id = artist.id;
-                        item.name = artist.name;
+                    artists.clear();
+                    for (Artist artist : artistsPager.artists.items) {
+                        String imageUrl = null; /* We're using a placeholder image for Artists with null imageUrl */
                         if (artist.images.size() > 0) {
-                            item.imageUrl = Helper.getOptimalImage(artist.images, IMAGE_SIZE).url;
+                            imageUrl = Helper.getOptimalImage(artist.images, IMAGE_SIZE).url;
                         }
-                        items.add(item);
+                        SpotifyArtist item = new SpotifyArtist(artist.id, artist.name, imageUrl);
+                        artists.add(item);
                     }
                     adapter.clear();
-                    adapter.addAll(items);
+                    adapter.addAll(artists);
 
-                    if(items.size() == 0) {
+                    if (artists.size() == 0) {
                         Toast.makeText(getActivity(), getText(R.string.no_results_artist), Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -119,25 +130,19 @@ public class MainActivityFragment extends Fragment {
         }
     }
 
-    private class ArtistListItem {
-        public String id;
-        public String name;
-        public String imageUrl;
-    }
-
-    private class ArtistListAdapter extends ArrayAdapter<ArtistListItem> {
-        public ArtistListAdapter(Context context, List<ArtistListItem> artists) {
+    private class ArtistListAdapter extends ArrayAdapter<SpotifyArtist> {
+        public ArtistListAdapter(Context context, List<SpotifyArtist> artists) {
             super(context, 0, artists);
         }
 
         public ArtistListAdapter(Context context) {
-            this(context, new ArrayList<ArtistListItem>());
+            this(context, new ArrayList<SpotifyArtist>());
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
 
-            ArtistListItem artist = getItem(position);
+            SpotifyArtist artist = getItem(position);
 
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_artist, parent, false);
@@ -145,8 +150,6 @@ public class MainActivityFragment extends Fragment {
 
             ImageView artistImageView = (ImageView) convertView.findViewById(R.id.artistImageView);
             if (artist.imageUrl != null) {
-            /*  It's unclear that I need to ensure the optimal image is in the 0th position when adding Artists to the Adapter
-            * TODO: Follow example in TracksActivityFragment to setup an Adapter of ArtistListItems that only stores the url of the appropriately sized image */
                 Picasso.with(getContext()).load(artist.imageUrl).resize(IMAGE_SIZE, IMAGE_SIZE).centerCrop().into(artistImageView);
             } else {
                 Picasso.with(getContext()).load(R.drawable.placeholder_128x128).resize(IMAGE_SIZE, IMAGE_SIZE).into(artistImageView);
