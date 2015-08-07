@@ -1,5 +1,8 @@
 package com.nirenorie.spotifystreamer;
 
+import android.view.View;
+import android.widget.TextView;
+
 import java.util.List;
 
 import kaaes.spotify.webapi.android.models.Image;
@@ -18,5 +21,10 @@ public class Helper {
             }
         }
         return image;
+    }
+
+    public static void setViewText(View view, int textViewId, String text) {
+        TextView tv = (TextView) view.findViewById(textViewId);
+        tv.setText(text);
     }
 }

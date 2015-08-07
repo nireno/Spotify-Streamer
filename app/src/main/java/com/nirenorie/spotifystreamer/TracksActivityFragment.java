@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -80,6 +81,15 @@ public class TracksActivityFragment extends Fragment {
             tracksListView.setEmptyView(emptyListView);
         }
 
+        tracksListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                SpotifyTrack t = topTracks.get(i);
+                Intent intent = new Intent(getActivity(), PlayerActivity.class);
+                intent.putExtra("track", t);
+                startActivity(intent);
+            }
+        });
         return view;
     }
 
@@ -101,7 +111,8 @@ public class TracksActivityFragment extends Fragment {
                     if (track.album.images.size() > 0) {
                         imageUrl = Helper.getOptimalImage(track.album.images, IMAGE_SIZE).url;
                     }
-                    SpotifyTrack spotifyTrack = new SpotifyTrack(track.name, track.album.name, imageUrl);
+                    SpotifyTrack spotifyTrack = new SpotifyTrack(track.name, track.album.name, imageUrl
+                            , track.artists.get(0).name, track.duration_ms);
                     topTracks.add(spotifyTrack);
                 }
                 adapter.addAll(topTracks);
