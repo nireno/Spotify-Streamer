@@ -28,10 +28,14 @@
         </activity>
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:label="@string/title_activity_settings" />
         <activity
             android:name=".PlayerActivity"
             android:label="@string/title_activity_player">
+            android:parentActivityName=".TracksActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.nirenorie.spotifystreamer.TracksActivity" />
         </activity>
     </application>
 
