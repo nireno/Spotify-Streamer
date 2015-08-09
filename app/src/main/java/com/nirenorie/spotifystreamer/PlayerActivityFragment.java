@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 
@@ -30,13 +31,13 @@ public class PlayerActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         SpotifyTrack t = getActivity().getIntent().getParcelableExtra("track");
-        View view = inflater.inflate(R.layout.fragment_player, container, false);
+        final View view = inflater.inflate(R.layout.fragment_player, container, false);
+        ImageView imageView = (ImageView) view.findViewById(R.id.playerImageView);
+        final ImageButton playButton = (ImageButton) view.findViewById(R.id.playerPlayImageButton);
+
         Helper.setViewText(view, R.id.playerArtistTextView, t.artist);
         Helper.setViewText(view, R.id.playerAlbumTextView, t.album);
         Helper.setViewText(view, R.id.playerTrackTextView, t.name);
-
-
-        ImageView imageView = (ImageView) view.findViewById(R.id.playerImageView);
         if (t.imageUrl != null) {
             Picasso.with(getActivity()).load(t.imageUrl).into(imageView);
         } else {
@@ -44,23 +45,11 @@ public class PlayerActivityFragment extends Fragment {
         }
 
         seekBar = (SeekBar) view.findViewById(R.id.playerSeekBar);
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mediaPlayer) {
-                int duration = mediaPlayer.getDuration();
-                Helper.setViewText(getView(), R.id.playerDurationTextView,
-                        Helper.readableTrackDuration(duration));
-                seekBar.setMax(duration);
-                mediaPlayer.start();
-            }
-        });
         final Handler h = new Handler();
         final Runnable seekBarUpdateRunnable = new Runnable() {
             @Override
             public void run() {
-                View view = getView();
-                if (view != null && !isSeeking) {
+                if (!isSeeking) {
                     SeekBar seekBar = (SeekBar) view.findViewById(R.id.playerSeekBar);
                     seekBar.setProgress(mediaPlayer.getCurrentPosition());
                     h.postDelayed(this, SEEKBAR_UPDATE_DELAY_MILLIS);
@@ -87,6 +76,18 @@ public class PlayerActivityFragment extends Fragment {
             }
         });
 
+        mediaPlayer = new MediaPlayer();
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                int duration = mediaPlayer.getDuration();
+                Helper.setViewText(view, R.id.playerDurationTextView,
+                        Helper.readableTrackDuration(duration));
+                seekBar.setMax(duration);
+                mediaPlayer.start();
+                playButton.setImageResource(android.R.drawable.ic_media_pause);
+            }
+        });
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
             mediaPlayer.setDataSource(t.previewUrl);
