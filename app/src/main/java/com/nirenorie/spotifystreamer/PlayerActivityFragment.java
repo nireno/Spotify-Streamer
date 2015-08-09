@@ -20,6 +20,7 @@ import com.squareup.picasso.Picasso;
 public class PlayerActivityFragment extends Fragment {
     private static final String LOG_TAG = "PlayerActivityFragment";
     private final int SEEKBAR_UPDATE_DELAY_MILLIS = 100;
+    private boolean isSeeking = false;
     private MediaPlayer mediaPlayer;
     private SeekBar seekBar;
     public PlayerActivityFragment() {
@@ -55,17 +56,36 @@ public class PlayerActivityFragment extends Fragment {
             }
         });
         final Handler h = new Handler();
-        h.postDelayed(new Runnable() {
+        final Runnable seekBarUpdateRunnable = new Runnable() {
             @Override
             public void run() {
                 View view = getView();
-                if (view != null) {
+                if (view != null && !isSeeking) {
                     SeekBar seekBar = (SeekBar) view.findViewById(R.id.playerSeekBar);
+                    seekBar.setProgress(mediaPlayer.getCurrentPosition());
+                    h.postDelayed(this, SEEKBAR_UPDATE_DELAY_MILLIS);
                 }
-                seekBar.setProgress(mediaPlayer.getCurrentPosition());
-                h.postDelayed(this, SEEKBAR_UPDATE_DELAY_MILLIS);
             }
-        }, SEEKBAR_UPDATE_DELAY_MILLIS);
+        };
+        h.postDelayed(seekBarUpdateRunnable, SEEKBAR_UPDATE_DELAY_MILLIS);
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                isSeeking = true;
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                isSeeking = false;
+                mediaPlayer.seekTo(seekBar.getProgress());
+                h.postDelayed(seekBarUpdateRunnable, SEEKBAR_UPDATE_DELAY_MILLIS);
+            }
+        });
 
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
