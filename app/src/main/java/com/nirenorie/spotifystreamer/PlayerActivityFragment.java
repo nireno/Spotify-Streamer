@@ -83,9 +83,7 @@ public class PlayerActivityFragment extends Fragment {
                     mediaPlayer.pause();
                     playButton.setImageResource(android.R.drawable.ic_media_play);
                 } else {
-                    mediaPlayer.start();
-                    playButton.setImageResource(android.R.drawable.ic_media_pause);
-                    handler.postDelayed(seekBarUpdateRunnable, SEEKBAR_UPDATE_DELAY_MILLIS);
+                    startPlaying();
                 }
             }
         });
@@ -98,11 +96,17 @@ public class PlayerActivityFragment extends Fragment {
                 Helper.setViewText(view, R.id.playerDurationTextView,
                         Helper.readableTrackDuration(duration));
                 seekBar.setMax(duration);
-                mediaPlayer.start();
-                playButton.setImageResource(android.R.drawable.ic_media_pause);
-                handler.postDelayed(seekBarUpdateRunnable, SEEKBAR_UPDATE_DELAY_MILLIS);
+                startPlaying();
             }
         });
+
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                playButton.setImageResource(android.R.drawable.ic_media_play);
+            }
+        });
+
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
             mediaPlayer.setDataSource(t.previewUrl);
@@ -118,5 +122,15 @@ public class PlayerActivityFragment extends Fragment {
         super.onPause();
         handler.removeCallbacks(seekBarUpdateRunnable);
         mediaPlayer.release();
+    }
+
+    private void startPlaying() {
+        View view = getView();
+        if (view != null) {
+            ImageButton btn = (ImageButton) view.findViewById(R.id.playerPlayImageButton);
+            btn.setImageResource(android.R.drawable.ic_media_pause);
+            mediaPlayer.start();
+            handler.postDelayed(seekBarUpdateRunnable, SEEKBAR_UPDATE_DELAY_MILLIS);
+        }
     }
 }
