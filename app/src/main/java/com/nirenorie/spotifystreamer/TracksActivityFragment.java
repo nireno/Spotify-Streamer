@@ -112,7 +112,7 @@ public class TracksActivityFragment extends Fragment {
                         imageUrl = Helper.getOptimalImage(track.album.images, IMAGE_SIZE).url;
                     }
                     SpotifyTrack spotifyTrack = new SpotifyTrack(track.name, track.album.name, imageUrl
-                            , track.artists.get(0).name, track.duration_ms);
+                            , track.artists.get(0).name, track.preview_url);
                     topTracks.add(spotifyTrack);
                 }
                 adapter.addAll(topTracks);

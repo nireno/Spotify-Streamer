@@ -18,14 +18,14 @@ public class SpotifyTrack implements Parcelable {
     public String album;
     public String imageUrl;
     public String artist;
-    public long duration;
+    public String previewUrl;
 
-    public SpotifyTrack(String name, String album, String imageUrl, String artist, long duration) {
+    public SpotifyTrack(String name, String album, String imageUrl, String artist, String previewUrl) {
         this.name = name;
         this.album = album;
         this.imageUrl = imageUrl;
         this.artist = artist;
-        this.duration = duration;
+        this.previewUrl = previewUrl;
     }
 
     private SpotifyTrack(Parcel in) {
@@ -33,7 +33,7 @@ public class SpotifyTrack implements Parcelable {
         album = in.readString();
         imageUrl = in.readString();
         artist = in.readString();
-        duration = in.readLong();
+        previewUrl = in.readString();
     }
 
     public int describeContents() {
@@ -45,6 +45,6 @@ public class SpotifyTrack implements Parcelable {
         out.writeString(album);
         out.writeString(imageUrl);
         out.writeString(artist);
-        out.writeLong(duration);
+        out.writeString(previewUrl);
     }
 }
