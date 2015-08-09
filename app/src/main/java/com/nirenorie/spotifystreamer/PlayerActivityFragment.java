@@ -21,7 +21,9 @@ import com.squareup.picasso.Picasso;
 public class PlayerActivityFragment extends Fragment {
     private static final String LOG_TAG = "PlayerActivityFragment";
     private final int SEEKBAR_UPDATE_DELAY_MILLIS = 100;
+    private final Handler handler = new Handler();
     private boolean isSeeking = false;
+    private Runnable seekBarUpdateRunnable;
     private MediaPlayer mediaPlayer;
     private SeekBar seekBar;
     public PlayerActivityFragment() {
@@ -45,18 +47,16 @@ public class PlayerActivityFragment extends Fragment {
         }
 
         seekBar = (SeekBar) view.findViewById(R.id.playerSeekBar);
-        final Handler h = new Handler();
-        final Runnable seekBarUpdateRunnable = new Runnable() {
+        seekBarUpdateRunnable = new Runnable() {
             @Override
             public void run() {
-                if (!isSeeking) {
+                if (mediaPlayer.isPlaying() && !isSeeking) {
                     SeekBar seekBar = (SeekBar) view.findViewById(R.id.playerSeekBar);
                     seekBar.setProgress(mediaPlayer.getCurrentPosition());
-                    h.postDelayed(this, SEEKBAR_UPDATE_DELAY_MILLIS);
+                    handler.postDelayed(this, SEEKBAR_UPDATE_DELAY_MILLIS);
                 }
             }
         };
-        h.postDelayed(seekBarUpdateRunnable, SEEKBAR_UPDATE_DELAY_MILLIS);
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -72,7 +72,21 @@ public class PlayerActivityFragment extends Fragment {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 isSeeking = false;
                 mediaPlayer.seekTo(seekBar.getProgress());
-                h.postDelayed(seekBarUpdateRunnable, SEEKBAR_UPDATE_DELAY_MILLIS);
+                handler.postDelayed(seekBarUpdateRunnable, SEEKBAR_UPDATE_DELAY_MILLIS);
+            }
+        });
+
+        playButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                    playButton.setImageResource(android.R.drawable.ic_media_play);
+                } else {
+                    mediaPlayer.start();
+                    playButton.setImageResource(android.R.drawable.ic_media_pause);
+                    handler.postDelayed(seekBarUpdateRunnable, SEEKBAR_UPDATE_DELAY_MILLIS);
+                }
             }
         });
 
@@ -86,6 +100,7 @@ public class PlayerActivityFragment extends Fragment {
                 seekBar.setMax(duration);
                 mediaPlayer.start();
                 playButton.setImageResource(android.R.drawable.ic_media_pause);
+                handler.postDelayed(seekBarUpdateRunnable, SEEKBAR_UPDATE_DELAY_MILLIS);
             }
         });
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -101,6 +116,7 @@ public class PlayerActivityFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        handler.removeCallbacks(seekBarUpdateRunnable);
         mediaPlayer.release();
     }
 }
