@@ -3,12 +3,14 @@ package com.nirenorie.spotifystreamer;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 
 import com.squareup.picasso.Picasso;
 
@@ -17,7 +19,9 @@ import com.squareup.picasso.Picasso;
  */
 public class PlayerActivityFragment extends Fragment {
     private static final String LOG_TAG = "PlayerActivityFragment";
+    private final int SEEKBAR_UPDATE_DELAY_MILLIS = 100;
     private MediaPlayer mediaPlayer;
+    private SeekBar seekBar;
     public PlayerActivityFragment() {
     }
 
@@ -38,15 +42,31 @@ public class PlayerActivityFragment extends Fragment {
             Picasso.with(getActivity()).load(R.drawable.placeholder_128x128).into(imageView);
         }
 
+        seekBar = (SeekBar) view.findViewById(R.id.playerSeekBar);
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
+                int duration = mediaPlayer.getDuration();
                 Helper.setViewText(getView(), R.id.playerDurationTextView,
-                        Helper.readableTrackDuration(mediaPlayer.getDuration()));
+                        Helper.readableTrackDuration(duration));
+                seekBar.setMax(duration);
                 mediaPlayer.start();
             }
         });
+        final Handler h = new Handler();
+        h.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                View view = getView();
+                if (view != null) {
+                    SeekBar seekBar = (SeekBar) view.findViewById(R.id.playerSeekBar);
+                }
+                seekBar.setProgress(mediaPlayer.getCurrentPosition());
+                h.postDelayed(this, SEEKBAR_UPDATE_DELAY_MILLIS);
+            }
+        }, SEEKBAR_UPDATE_DELAY_MILLIS);
+
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
             mediaPlayer.setDataSource(t.previewUrl);
