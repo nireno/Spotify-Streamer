@@ -19,10 +19,12 @@ public class DbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_TRACK_TABLE = "CREATE TABLE " + TrackEntry.TABLE_NAME + " (" +
                 TrackEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 TrackEntry.COLUMN_TRACK_NAME + " TEXT NOT NULL, " +
-                TrackEntry.COLUMN_TRACK_ARTIST + " INTEGER NOT NULL, " +
+                TrackEntry.COLUMN_TRACK_ARTIST_ID + " INTEGER NOT NULL, " +
+                TrackEntry.COLUMN_TRACK_ARTIST_NAME + " TEXT NOT NULL, " +
                 TrackEntry.COLUMN_TRACK_PREVIEW_URL + "TEXT NOT NULL" +
                 TrackEntry.COLUMN_TRACK_ALBUM_NAME + "TEXT NOT NULL" +
-                TrackEntry.COLUMN_TRACK_ALBUM_IMAGE_URL + "TEXT NOT NULL";
+                TrackEntry.COLUMN_TRACK_ALBUM_IMAGE_URL + "TEXT NOT NULL), " +
+                "UNIQUE(" + TrackEntry.COLUMN_TRACK_PREVIEW_URL + ") ON CONFLICT REPLACE;";
 
         sqLiteDatabase.execSQL(SQL_CREATE_TRACK_TABLE);
     }

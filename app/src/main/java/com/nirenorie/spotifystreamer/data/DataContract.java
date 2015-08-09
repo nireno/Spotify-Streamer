@@ -62,7 +62,8 @@ public class DataContract {
 
         // Column with the foreign key into the location table.
         public static final String COLUMN_TRACK_NAME = "name";
-        public static final String COLUMN_TRACK_ARTIST = "artist";
+        public static final String COLUMN_TRACK_ARTIST_ID = "artist_id";
+        public static final String COLUMN_TRACK_ARTIST_NAME = "artist_name";
         public static final String COLUMN_TRACK_PREVIEW_URL = "preview_url";
         public static final String COLUMN_TRACK_ALBUM_NAME = "album_name";
         public static final String COLUMN_TRACK_ALBUM_IMAGE_URL = "album_image_url";
@@ -71,39 +72,9 @@ public class DataContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-//        /*
-//            Student: This is the buildWeatherLocation function you filled in.
-//         */
-//        public static Uri buildWeatherLocation(String locationSetting) {
-//            return CONTENT_URI.buildUpon().appendPath(locationSetting).build();
-//        }
-//
-//        public static Uri buildWeatherLocationWithStartDate(
-//                String locationSetting, long startDate) {
-//            long normalizedDate = normalizeDate(startDate);
-//            return CONTENT_URI.buildUpon().appendPath(locationSetting)
-//                    .appendQueryParameter(COLUMN_DATE, Long.toString(normalizedDate)).build();
-//        }
-//
-//        public static Uri buildWeatherLocationWithDate(String locationSetting, long date) {
-//            return CONTENT_URI.buildUpon().appendPath(locationSetting)
-//                    .appendPath(Long.toString(normalizeDate(date))).build();
-//        }
-//
-//        public static String getLocationSettingFromUri(Uri uri) {
-//            return uri.getPathSegments().get(1);
-//        }
-//
-//        public static long getDateFromUri(Uri uri) {
-//            return Long.parseLong(uri.getPathSegments().get(2));
-//        }
-//
-//        public static long getStartDateFromUri(Uri uri) {
-//            String dateString = uri.getQueryParameter(COLUMN_DATE);
-//            if (null != dateString && dateString.length() > 0)
-//                return Long.parseLong(dateString);
-//            else
-//                return 0;
-//        }
+        public static String getArtistFromUri(Uri uri) {
+            return uri.getLastPathSegment();
+        }
+
     }
 }
