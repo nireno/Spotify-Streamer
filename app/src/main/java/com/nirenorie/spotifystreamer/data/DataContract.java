@@ -62,8 +62,8 @@ public class DataContract {
 
         // Column with the foreign key into the location table.
         public static final String COLUMN_NAME = "name";
-        public static final String COLUMN_ARTIST_ID = "artist_id";
-        public static final String COLUMN_ARTIST_NAME = "artist_name";
+        public static final String COLUMN_ARTIST_ID = "artist_id"; /* Artist who has this as a top track */
+        public static final String COLUMN_ARTIST_NAME = "artist_name"; /* Main artist for the track, whose id may differ from our artist_id */
         public static final String COLUMN_PREVIEW_URL = "preview_url";
         public static final String COLUMN_ALBUM_NAME = "album_name";
         public static final String COLUMN_ALBUM_IMAGE_URL = "album_image_url";

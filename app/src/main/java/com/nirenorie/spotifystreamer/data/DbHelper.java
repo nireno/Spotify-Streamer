@@ -24,7 +24,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 TrackEntry.COLUMN_PREVIEW_URL + " TEXT NOT NULL, " +
                 TrackEntry.COLUMN_ALBUM_NAME + " TEXT NOT NULL, " +
                 TrackEntry.COLUMN_ALBUM_IMAGE_URL + " TEXT NOT NULL, " +
-                String.format("UNIQUE(%s, %s) ON CONFLICT REPLACE);", TrackEntry.COLUMN_ARTIST_NAME, TrackEntry.COLUMN_NAME);
+                String.format("UNIQUE(%s, %s) ON CONFLICT REPLACE);", TrackEntry.COLUMN_ARTIST_ID, TrackEntry.COLUMN_NAME);
 
         sqLiteDatabase.execSQL(SQL_CREATE_TRACK_TABLE);
     }
