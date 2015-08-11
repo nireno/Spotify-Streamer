@@ -61,18 +61,22 @@ public class DataContract {
         public static final String TABLE_NAME = "track";
 
         // Column with the foreign key into the location table.
-        public static final String COLUMN_TRACK_NAME = "name";
-        public static final String COLUMN_TRACK_ARTIST_ID = "artist_id";
-        public static final String COLUMN_TRACK_ARTIST_NAME = "artist_name";
-        public static final String COLUMN_TRACK_PREVIEW_URL = "preview_url";
-        public static final String COLUMN_TRACK_ALBUM_NAME = "album_name";
-        public static final String COLUMN_TRACK_ALBUM_IMAGE_URL = "album_image_url";
+        public static final String COLUMN_NAME = "name";
+        public static final String COLUMN_ARTIST_ID = "artist_id";
+        public static final String COLUMN_ARTIST_NAME = "artist_name";
+        public static final String COLUMN_PREVIEW_URL = "preview_url";
+        public static final String COLUMN_ALBUM_NAME = "album_name";
+        public static final String COLUMN_ALBUM_IMAGE_URL = "album_image_url";
 
         public static Uri buildTrackUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static String getArtistFromUri(Uri uri) {
+        public static Uri buildTrackUriWithArtistId(String id) {
+            return TrackEntry.CONTENT_URI.buildUpon().appendPath(id).build();
+        }
+
+        public static String getArtistIdFromUri(Uri uri) {
             return uri.getLastPathSegment();
         }
 

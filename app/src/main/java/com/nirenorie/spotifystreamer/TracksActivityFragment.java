@@ -1,8 +1,11 @@
 package com.nirenorie.spotifystreamer;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -16,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.nirenorie.spotifystreamer.data.DataContract;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -24,6 +28,7 @@ import java.util.Map;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.ArtistSimple;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
 import retrofit.Callback;
@@ -35,6 +40,7 @@ import retrofit.client.Response;
  * A placeholder fragment containing a simple view.
  */
 public class TracksActivityFragment extends Fragment {
+    private final String LOG_TAG = this.getClass().getSimpleName();
     private final String CLASS_TAG = this.getClass().getSimpleName();
     private String artistId = "";
     private int IMAGE_SIZE;
@@ -106,6 +112,9 @@ public class TracksActivityFragment extends Fragment {
             @Override
             public void success(Tracks tracks, Response response) {
                 topTracks.clear();
+                ContentResolver contentResolver = getActivity().getContentResolver();
+
+                ArtistSimple artist = null;
                 for (Track track : tracks.tracks) {
                     String imageUrl = null;
                     if (track.album.images.size() > 0) {
@@ -114,6 +123,25 @@ public class TracksActivityFragment extends Fragment {
                     SpotifyTrack spotifyTrack = new SpotifyTrack(track.name, track.album.name, imageUrl
                             , track.artists.get(0).name, track.preview_url);
                     topTracks.add(spotifyTrack);
+
+                    artist = track.artists.get(0);
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(DataContract.TrackEntry.COLUMN_ALBUM_IMAGE_URL, imageUrl);
+                    contentValues.put(DataContract.TrackEntry.COLUMN_ALBUM_NAME, track.album.name);
+                    contentValues.put(DataContract.TrackEntry.COLUMN_ARTIST_ID, artist.id);
+                    contentValues.put(DataContract.TrackEntry.COLUMN_ARTIST_NAME, artist.name);
+                    contentValues.put(DataContract.TrackEntry.COLUMN_PREVIEW_URL, track.preview_url);
+                    contentValues.put(DataContract.TrackEntry.COLUMN_NAME, track.preview_url);
+                    contentResolver.insert(DataContract.TrackEntry.CONTENT_URI, contentValues);
+                }
+
+                if (artist != null) {
+                    Cursor cursor = contentResolver.query(DataContract.TrackEntry.buildTrackUriWithArtistId(artist.id), null, null, null, null);
+                    Log.d(LOG_TAG, "Cursor row count: " + cursor.getCount());
+                    while (cursor.moveToNext()) {
+                        Log.d(LOG_TAG, cursor.getString(cursor.getColumnIndex(DataContract.TrackEntry.COLUMN_PREVIEW_URL)));
+                    }
+                    cursor.close();
                 }
                 adapter.addAll(topTracks);
 

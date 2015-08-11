@@ -7,7 +7,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
-public class SqliteProvider extends ContentProvider {
+public class TracksProvider extends ContentProvider {
     static final int TRACK = 101;
     static final int TRACK_WITH_ARTIST_ID = 101;
     private static final UriMatcher sUriMatcher = buildUriMatcher();
@@ -16,14 +16,15 @@ public class SqliteProvider extends ContentProvider {
     static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = DataContract.CONTENT_AUTHORITY;
-        matcher.addURI(authority, DataContract.PATH_TRACK + "/#", TRACK_WITH_ARTIST_ID);
+        matcher.addURI(authority, DataContract.PATH_TRACK, TRACK);
+        matcher.addURI(authority, DataContract.PATH_TRACK + "/*", TRACK_WITH_ARTIST_ID);
         return matcher;
     }
 
     private Cursor getTracksByArtist(Uri uri, String[] projection, String sortOrder) {
-        String artist = DataContract.TrackEntry.getArtistFromUri(uri);
-        String[] selectionArgs = new String[]{artist};
-        String selection = DataContract.TrackEntry.COLUMN_TRACK_ARTIST_ID + " = ?";
+        String artistId = DataContract.TrackEntry.getArtistIdFromUri(uri);
+        String[] selectionArgs = new String[]{artistId};
+        String selection = DataContract.TrackEntry.COLUMN_ARTIST_ID + " = ?";
         SQLiteDatabase db = mOpenHelper.getReadableDatabase();
         return db.query(DataContract.TrackEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
     }
