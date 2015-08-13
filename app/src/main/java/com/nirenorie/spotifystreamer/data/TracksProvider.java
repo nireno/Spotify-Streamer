@@ -8,8 +8,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
 public class TracksProvider extends ContentProvider {
-    static final int TRACK = 101;
-    static final int TRACK_WITH_ARTIST_ID = 101;
+    static final int TRACK = 100;
+    static final int TRACK_URI_WITH_ID = 101;
+    static final int ARTIST_URI_WITH_ID = 200;
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private DbHelper mOpenHelper;
 
@@ -17,16 +18,25 @@ public class TracksProvider extends ContentProvider {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = DataContract.CONTENT_AUTHORITY;
         matcher.addURI(authority, DataContract.PATH_TRACK, TRACK);
-        matcher.addURI(authority, DataContract.PATH_TRACK + "/*", TRACK_WITH_ARTIST_ID);
+        matcher.addURI(authority, DataContract.PATH_ARTIST + "/*", ARTIST_URI_WITH_ID);
+        matcher.addURI(authority, DataContract.PATH_TRACK + "/#", TRACK_URI_WITH_ID);
         return matcher;
     }
 
     private Cursor getTracksByArtist(Uri uri, String[] projection, String sortOrder) {
-        String artistId = DataContract.TrackEntry.getArtistIdFromUri(uri);
+        String artistId = DataContract.ArtistEntry.getArtistIdFromUri(uri);
         String[] selectionArgs = new String[]{artistId};
         String selection = DataContract.TrackEntry.COLUMN_ARTIST_ID + " = ?";
         SQLiteDatabase db = mOpenHelper.getReadableDatabase();
         return db.query(DataContract.TrackEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
+    }
+
+    private Cursor getTrackById(Uri uri, String[] projection){
+        long id = DataContract.TrackEntry.getArtistIdFromUri(uri);
+        String[] selectionArgs = new String[]{Long.toString(id)};
+        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
+        return db.query(DataContract.TrackEntry.TABLE_NAME,
+                projection, DataContract.TrackEntry._ID + " = ?", selectionArgs, null, null, null);
     }
 
     @Override
@@ -41,7 +51,7 @@ public class TracksProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
-            case TRACK_WITH_ARTIST_ID:
+            case ARTIST_URI_WITH_ID:
                 return DataContract.TrackEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -52,11 +62,17 @@ public class TracksProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
         Cursor retCursor;
+        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
         switch (sUriMatcher.match(uri)) {
-            case TRACK_WITH_ARTIST_ID: {
+            case ARTIST_URI_WITH_ID:
                 retCursor = getTracksByArtist(uri, projection, sortOrder);
                 break;
-            }
+            case TRACK_URI_WITH_ID:
+                retCursor = getTrackById(uri, projection);
+                break;
+            case TRACK:
+                return db.query(DataContract.TrackEntry.TABLE_NAME,
+                        projection, selection, selectionArgs, null, null, sortOrder);
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }

@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="48sp"
         android:id="@+id/searchArtistEditText"
-        tools:text="Coldplay"
+        android:text="Coldplay"
         android:singleLine="true"
         android:imeOptions="actionDone"
         android:hint="Search by artist..." />

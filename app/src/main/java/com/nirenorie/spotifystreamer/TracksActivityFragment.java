@@ -84,8 +84,8 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
         emptyListView = (TextView) view.findViewById(R.id.noTracksTextView);
         tracksListView.setEmptyView(emptyListView);
 
-        Cursor cursor = getActivity().getContentResolver().query(DataContract.TrackEntry
-                .buildTrackUriWithArtistId(artistId), null, null, null, null);
+        Cursor cursor = getActivity().getContentResolver().query(DataContract.ArtistEntry
+                .buildArtistUriWithId(artistId), null, null, null, null);
         if (cursor.getCount() == 0) {
             loadTracks(artistId);
         } else {
@@ -98,10 +98,12 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 /* TODO: Pass data by URI to PlayerActivity */
-                SpotifyTrack t = topTracks.get(i);
-                Intent intent = new Intent(getActivity(), PlayerActivity.class);
-                intent.putExtra("track", t);
-                startActivity(intent);
+                Cursor cursor = (Cursor) adapterView.getItemAtPosition(i);
+                if (cursor != null) {
+                    Intent intent = new Intent(getActivity(), PlayerActivity.class);
+                    intent.setData(DataContract.TrackEntry.buildTrackUri(cursor.getLong(cursor.getColumnIndex(DataContract.TrackEntry._ID))));
+                    startActivity(intent);
+                }
             }
         });
         return view;
@@ -137,13 +139,14 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
                     contentValues.put(DataContract.TrackEntry.COLUMN_ARTIST_ID, artistId);
                     contentValues.put(DataContract.TrackEntry.COLUMN_ARTIST_NAME, track.artists.get(0).name);
                     contentValues.put(DataContract.TrackEntry.COLUMN_PREVIEW_URL, track.preview_url);
-                    contentValues.put(DataContract.TrackEntry.COLUMN_NAME, track.name);
-                    contentResolver.insert(DataContract.TrackEntry.CONTENT_URI, contentValues);
+                    contentValues.put(DataContract.TrackEntry.COLUMN_TRACK_NAME, track.name);
+//                    contentResolver.insert(DataContract.TrackEntry.CONTENT_URI, contentValues);
                 }
 
                 getLoaderManager().restartLoader(TOP_TRACKS_LOADER, null, TracksActivityFragment.this);
                 /* TODO: remove debug code */
-                Cursor cursor = contentResolver.query(DataContract.TrackEntry.buildTrackUriWithArtistId(artistId), null, null, null, null);
+                Cursor cursor = contentResolver.query(DataContract.TrackEntry.CONTENT_URI, null,
+                        DataContract.TrackEntry.COLUMN_ARTIST_ID + " = ?", new String[]{artistId}, null);
                 Log.d(LOG_TAG, "Cursor row count: " + cursor.getCount());
                 while (cursor.moveToNext()) {
                     Log.d(LOG_TAG, cursor.getString(cursor.getColumnIndex(DataContract.TrackEntry.COLUMN_PREVIEW_URL)));
@@ -189,7 +192,7 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            String name = cursor.getString(cursor.getColumnIndex(DataContract.TrackEntry.COLUMN_NAME));
+            String name = cursor.getString(cursor.getColumnIndex(DataContract.TrackEntry.COLUMN_TRACK_NAME));
             String album = cursor.getString(cursor.getColumnIndex(DataContract.TrackEntry.COLUMN_ALBUM_NAME));
             String imageUrl = cursor.getString(cursor.getColumnIndex(DataContract.TrackEntry.COLUMN_ALBUM_IMAGE_URL));
             String artist = cursor.getString(cursor.getColumnIndex(DataContract.TrackEntry.COLUMN_ARTIST_NAME));

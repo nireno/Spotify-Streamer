@@ -1,7 +1,9 @@
 package com.nirenorie.spotifystreamer;
 
+import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -12,7 +14,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
-
+import com.nirenorie.spotifystreamer.data.DataContract.TrackEntry;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -29,10 +31,33 @@ public class PlayerActivityFragment extends Fragment {
     public PlayerActivityFragment() {
     }
 
+    private static final String[] TRACK_COLUMNS = {
+            TrackEntry.COLUMN_ARTIST_NAME,
+            TrackEntry.COLUMN_ALBUM_NAME,
+            TrackEntry.COLUMN_TRACK_NAME,
+            TrackEntry.COLUMN_ALBUM_IMAGE_URL,
+            TrackEntry.COLUMN_PREVIEW_URL,
+    };
+
+    // these constants correspond to the projection defined above, and must change if the
+    // projection changes
+    private static final int COL_ARTIST_NAME = 0;
+    private static final int COL_ALBUM_NAME = 1;
+    private static final int COLUMN_TRACK_NAME = 2;
+    private static final int COLUMN_ALBUM_IMAGE_URL = 3;
+    private static final int COLUMN_PREVIEW_URL = 4;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        SpotifyTrack t = getActivity().getIntent().getParcelableExtra("track");
+        Uri uri = getActivity().getIntent().getData();
+        Cursor c = getActivity().getContentResolver().query(uri, TRACK_COLUMNS, null, null, null);
+        SpotifyTrack t = new SpotifyTrack(
+                c.getString(COLUMN_TRACK_NAME),
+                c.getString(COL_ALBUM_NAME),
+                c.getString(COLUMN_ALBUM_IMAGE_URL),
+                c.getString(COL_ARTIST_NAME),
+                c.getString(COLUMN_PREVIEW_URL));
         final View view = inflater.inflate(R.layout.fragment_player, container, false);
         ImageView imageView = (ImageView) view.findViewById(R.id.playerImageView);
         final ImageButton playButton = (ImageButton) view.findViewById(R.id.playerPlayImageButton);
