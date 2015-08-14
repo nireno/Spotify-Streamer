@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+
 import com.nirenorie.spotifystreamer.data.DataContract.TrackEntry;
 import com.squareup.picasso.Picasso;
 
@@ -22,15 +23,6 @@ import com.squareup.picasso.Picasso;
  */
 public class PlayerActivityFragment extends Fragment {
     private static final String LOG_TAG = "PlayerActivityFragment";
-    private final int SEEKBAR_UPDATE_DELAY_MILLIS = 100;
-    private final Handler handler = new Handler();
-    private boolean isSeeking = false;
-    private Runnable seekBarUpdateRunnable;
-    private MediaPlayer mediaPlayer;
-    private SeekBar seekBar;
-    public PlayerActivityFragment() {
-    }
-
     private static final String[] TRACK_COLUMNS = {
             TrackEntry.COLUMN_ARTIST_NAME,
             TrackEntry.COLUMN_ALBUM_NAME,
@@ -38,7 +30,6 @@ public class PlayerActivityFragment extends Fragment {
             TrackEntry.COLUMN_ALBUM_IMAGE_URL,
             TrackEntry.COLUMN_PREVIEW_URL,
     };
-
     // these constants correspond to the projection defined above, and must change if the
     // projection changes
     private static final int COL_ARTIST_NAME = 0;
@@ -46,12 +37,22 @@ public class PlayerActivityFragment extends Fragment {
     private static final int COLUMN_TRACK_NAME = 2;
     private static final int COLUMN_ALBUM_IMAGE_URL = 3;
     private static final int COLUMN_PREVIEW_URL = 4;
+    private final int SEEKBAR_UPDATE_DELAY_MILLIS = 100;
+    private final Handler handler = new Handler();
+    private boolean isSeeking = false;
+    private Runnable seekBarUpdateRunnable;
+    private MediaPlayer mediaPlayer;
+    private SeekBar seekBar;
+
+    public PlayerActivityFragment() {
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Uri uri = getActivity().getIntent().getData();
         Cursor c = getActivity().getContentResolver().query(uri, TRACK_COLUMNS, null, null, null);
+        c.moveToFirst();
         SpotifyTrack t = new SpotifyTrack(
                 c.getString(COLUMN_TRACK_NAME),
                 c.getString(COL_ALBUM_NAME),
