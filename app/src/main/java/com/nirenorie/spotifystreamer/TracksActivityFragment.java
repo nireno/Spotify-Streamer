@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -76,24 +75,11 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
-
         view = inflater.inflate(R.layout.fragment_tracks, container);
         tracksListView = (ListView) view.findViewById(R.id.tracksListView);
         tracksListView.setAdapter(adapter);
-
         emptyListView = (TextView) view.findViewById(R.id.noTracksTextView);
         tracksListView.setEmptyView(emptyListView);
-
-        Cursor cursor = getActivity().getContentResolver().query(DataContract.ArtistEntry
-                .buildArtistUriWithId(artistId), null, null, null, null);
-        if (cursor.getCount() == 0) {
-            loadTracks(artistId);
-        } else {
-            /* TODO: remove unecessary topTracks*/
-//            topTracks = savedInstanceState.getParcelableArrayList(KEY_TRACKS);
-            adapter.swapCursor(cursor);
-        }
-
         tracksListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -106,6 +92,7 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
                 }
             }
         });
+        getLoaderManager().restartLoader(TOP_TRACKS_LOADER, null, this);
         return view;
     }
 
@@ -140,21 +127,14 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
                     contentValues.put(DataContract.TrackEntry.COLUMN_ARTIST_NAME, track.artists.get(0).name);
                     contentValues.put(DataContract.TrackEntry.COLUMN_PREVIEW_URL, track.preview_url);
                     contentValues.put(DataContract.TrackEntry.COLUMN_TRACK_NAME, track.name);
-//                    contentResolver.insert(DataContract.TrackEntry.CONTENT_URI, contentValues);
+                    contentResolver.insert(DataContract.TrackEntry.CONTENT_URI, contentValues);
                 }
 
-                getLoaderManager().restartLoader(TOP_TRACKS_LOADER, null, TracksActivityFragment.this);
-                /* TODO: remove debug code */
-                Cursor cursor = contentResolver.query(DataContract.TrackEntry.CONTENT_URI, null,
-                        DataContract.TrackEntry.COLUMN_ARTIST_ID + " = ?", new String[]{artistId}, null);
-                Log.d(LOG_TAG, "Cursor row count: " + cursor.getCount());
-                while (cursor.moveToNext()) {
-                    Log.d(LOG_TAG, cursor.getString(cursor.getColumnIndex(DataContract.TrackEntry.COLUMN_PREVIEW_URL)));
+                /* If no tracks were inserted, no need to restart the loader. Additionally this
+                   currently prevents an infinite loop within onLoadFinished. */
+                if (tracks.tracks.size() > 0) {
+                    getLoaderManager().restartLoader(TOP_TRACKS_LOADER, null, TracksActivityFragment.this);
                 }
-                cursor.close();
-
-                /* setEmptyView here to avoid brief flash of the "no tracks found" message*/
-                tracksListView.setEmptyView(emptyListView);
             }
 
             @Override
@@ -166,13 +146,17 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Uri topTracksForArtistUri = DataContract.TrackEntry.buildTrackUriWithArtistId(artistId);
-        return new CursorLoader(getActivity(), topTracksForArtistUri, null, null, null, null);
+        return new CursorLoader(getActivity(), DataContract.TrackEntry.CONTENT_URI, null,
+                DataContract.TrackEntry.COLUMN_ARTIST_ID + " = ?", new String[]{artistId}, null);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        adapter.swapCursor(data);
+        if (data.getCount() > 0) {
+            adapter.swapCursor(data);
+        } else {
+            loadTracks(artistId);
+        }
     }
 
     @Override

@@ -26,32 +26,31 @@ import android.provider.BaseColumns;
 public class DataContract {
     public static final String CONTENT_AUTHORITY = "com.nirenorie.spotifystreamer";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
-    //    public static final String PATH_ARTIST = "artist";
     public static final String PATH_TRACK = "track";
     public static final String PATH_ARTIST = "artist";
 
     /* Inner class that defines the table contents of the location table */
-    public static final class ArtistEntry implements BaseColumns {
-        public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_ARTIST).build();
-        public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ARTIST;
-        public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ARTIST;
-
-        public static final String TABLE_NAME = "artist";
-        public static final String COLUMN_ARTIST_ID = "id";
-        public static final String COLUMN_ARTIST_NAME = "name";
-        public static final String COLUMN_ARTIST_IMAGE_URL = "image_url";
-
-        public static Uri buildArtistUriWithId(String id) {
-            return ArtistEntry.CONTENT_URI.buildUpon().appendPath(id).build();
-        }
-
-        public static String getArtistIdFromUri(Uri uri) {
-            return uri.getLastPathSegment();
-        }
-    }
+//    public static final class ArtistEntry implements BaseColumns {
+//        public static final Uri CONTENT_URI =
+//                BASE_CONTENT_URI.buildUpon().appendPath(PATH_ARTIST).build();
+//        public static final String CONTENT_TYPE =
+//                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ARTIST;
+//        public static final String CONTENT_ITEM_TYPE =
+//                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ARTIST;
+//
+//        public static final String TABLE_NAME = "artist";
+//        public static final String COLUMN_ARTIST_ID = "id";
+//        public static final String COLUMN_ARTIST_NAME = "name";
+//        public static final String COLUMN_ARTIST_IMAGE_URL = "image_url";
+//
+//        public static Uri buildArtistUri(Long id) {
+//            return ContentUris.withAppendedId(CONTENT_URI, id);
+//        }
+//
+//        public static String getArtistIdFromUri(Uri uri) {
+//            return uri.getLastPathSegment();
+//        }
+//    }
 
     public static final class TrackEntry implements BaseColumns {
 
@@ -76,14 +75,5 @@ public class DataContract {
         public static Uri buildTrackUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
-
-        public static Uri buildTrackUriWithArtistId(String id) {
-            return TrackEntry.CONTENT_URI.buildUpon().appendPath(id).build();
-        }
-
-        public static Long getArtistIdFromUri(Uri uri) {
-            return ContentUris.parseId(uri);
-        }
-
     }
 }

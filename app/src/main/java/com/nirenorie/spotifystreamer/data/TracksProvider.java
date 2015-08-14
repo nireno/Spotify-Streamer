@@ -1,6 +1,7 @@
 package com.nirenorie.spotifystreamer.data;
 
 import android.content.ContentProvider;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -23,16 +24,8 @@ public class TracksProvider extends ContentProvider {
         return matcher;
     }
 
-    private Cursor getTracksByArtist(Uri uri, String[] projection, String sortOrder) {
-        String artistId = DataContract.ArtistEntry.getArtistIdFromUri(uri);
-        String[] selectionArgs = new String[]{artistId};
-        String selection = DataContract.TrackEntry.COLUMN_ARTIST_ID + " = ?";
-        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
-        return db.query(DataContract.TrackEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
-    }
-
     private Cursor getTrackById(Uri uri, String[] projection){
-        long id = DataContract.TrackEntry.getArtistIdFromUri(uri);
+        long id = ContentUris.parseId(uri);
         String[] selectionArgs = new String[]{Long.toString(id)};
         SQLiteDatabase db = mOpenHelper.getReadableDatabase();
         return db.query(DataContract.TrackEntry.TABLE_NAME,
@@ -64,9 +57,6 @@ public class TracksProvider extends ContentProvider {
         Cursor retCursor;
         SQLiteDatabase db = mOpenHelper.getReadableDatabase();
         switch (sUriMatcher.match(uri)) {
-            case ARTIST_URI_WITH_ID:
-                retCursor = getTracksByArtist(uri, projection, sortOrder);
-                break;
             case TRACK_URI_WITH_ID:
                 retCursor = getTrackById(uri, projection);
                 break;
