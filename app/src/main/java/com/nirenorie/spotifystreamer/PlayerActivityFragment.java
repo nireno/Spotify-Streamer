@@ -1,11 +1,12 @@
 package com.nirenorie.spotifystreamer;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -43,16 +44,27 @@ public class PlayerActivityFragment extends Fragment {
     private Runnable seekBarUpdateRunnable;
     private MediaPlayer mediaPlayer;
     private SeekBar seekBar;
+    private String artistId;
+    private int trackIndex;
 
     public PlayerActivityFragment() {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Intent i = getActivity().getIntent();
+        artistId = i.getStringExtra(TracksActivityFragment.EXTRA_ARTIST_ID);
+        trackIndex = i.getIntExtra(TracksActivityFragment.EXTRA_POSITION, 0);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Uri uri = getActivity().getIntent().getData();
-        Cursor c = getActivity().getContentResolver().query(uri, TRACK_COLUMNS, null, null, null);
-        c.moveToFirst();
+        String whereClause = TrackEntry.COLUMN_ARTIST_ID + "= ?";
+        Cursor c = getActivity().getContentResolver().
+                query(TrackEntry.CONTENT_URI, TRACK_COLUMNS, whereClause, new String[]{artistId}, null);
+        c.moveToPosition(trackIndex);
         SpotifyTrack t = new SpotifyTrack(
                 c.getString(COLUMN_TRACK_NAME),
                 c.getString(COL_ALBUM_NAME),

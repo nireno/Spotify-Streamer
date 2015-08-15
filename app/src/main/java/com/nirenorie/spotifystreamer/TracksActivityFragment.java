@@ -42,9 +42,12 @@ import retrofit.client.Response;
  * A placeholder fragment containing a simple view.
  */
 public class TracksActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    public static final String EXTRA_ARTIST_ID = "extraArtistId";
+    public static final String EXTRA_POSITION = "extraPosition";
     private static final int TOP_TRACKS_LOADER = 0;
     private final String LOG_TAG = this.getClass().getSimpleName();
     private final String CLASS_TAG = this.getClass().getSimpleName();
+
     private String artistId = "";
     private int IMAGE_SIZE;
     private TrackListAdapter adapter;
@@ -83,13 +86,10 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
         tracksListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                /* TODO: Pass data by URI to PlayerActivity */
-                Cursor cursor = (Cursor) adapterView.getItemAtPosition(i);
-                if (cursor != null) {
-                    Intent intent = new Intent(getActivity(), PlayerActivity.class);
-                    intent.setData(DataContract.TrackEntry.buildTrackUri(cursor.getLong(cursor.getColumnIndex(DataContract.TrackEntry._ID))));
-                    startActivity(intent);
-                }
+                Intent intent = new Intent(getActivity(), PlayerActivity.class);
+                intent.putExtra(EXTRA_ARTIST_ID, artistId);
+                intent.putExtra(EXTRA_POSITION, i);
+                startActivity(intent);
             }
         });
         getLoaderManager().restartLoader(TOP_TRACKS_LOADER, null, this);
