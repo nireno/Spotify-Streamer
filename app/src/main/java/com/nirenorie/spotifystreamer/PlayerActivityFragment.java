@@ -35,9 +35,9 @@ public class PlayerActivityFragment extends Fragment {
     // projection changes
     private static final int COL_ARTIST_NAME = 0;
     private static final int COL_ALBUM_NAME = 1;
-    private static final int COLUMN_TRACK_NAME = 2;
-    private static final int COLUMN_ALBUM_IMAGE_URL = 3;
-    private static final int COLUMN_PREVIEW_URL = 4;
+    private static final int COL_TRACK_NAME = 2;
+    private static final int COL_ALBUM_IMAGE_URL = 3;
+    private static final int COL_PREVIEW_URL = 4;
     private final int SEEKBAR_UPDATE_DELAY_MILLIS = 100;
     private final Handler handler = new Handler();
     private boolean isSeeking = false;
@@ -65,24 +65,8 @@ public class PlayerActivityFragment extends Fragment {
         Cursor c = getActivity().getContentResolver().
                 query(TrackEntry.CONTENT_URI, TRACK_COLUMNS, whereClause, new String[]{artistId}, null);
         c.moveToPosition(trackIndex);
-        SpotifyTrack t = new SpotifyTrack(
-                c.getString(COLUMN_TRACK_NAME),
-                c.getString(COL_ALBUM_NAME),
-                c.getString(COLUMN_ALBUM_IMAGE_URL),
-                c.getString(COL_ARTIST_NAME),
-                c.getString(COLUMN_PREVIEW_URL));
         final View view = inflater.inflate(R.layout.fragment_player, container, false);
-        ImageView imageView = (ImageView) view.findViewById(R.id.playerImageView);
         final ImageButton playButton = (ImageButton) view.findViewById(R.id.playerPlayImageButton);
-
-        Helper.setViewText(view, R.id.playerArtistTextView, t.artist);
-        Helper.setViewText(view, R.id.playerAlbumTextView, t.album);
-        Helper.setViewText(view, R.id.playerTrackTextView, t.name);
-        if (t.imageUrl != null) {
-            Picasso.with(getActivity()).load(t.imageUrl).into(imageView);
-        } else {
-            Picasso.with(getActivity()).load(R.drawable.placeholder_128x128).into(imageView);
-        }
 
         seekBar = (SeekBar) view.findViewById(R.id.playerSeekBar);
         seekBarUpdateRunnable = new Runnable() {
@@ -146,12 +130,8 @@ public class PlayerActivityFragment extends Fragment {
         });
 
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        try {
-            mediaPlayer.setDataSource(t.previewUrl);
-            mediaPlayer.prepareAsync();
-        } catch (Exception e) {
-            Log.d(LOG_TAG, e.getMessage());
-        }
+        loadTrackDetails(view, c);
+        playTrackPreview(c);
         return view;
     }
 
@@ -169,6 +149,28 @@ public class PlayerActivityFragment extends Fragment {
             btn.setImageResource(android.R.drawable.ic_media_pause);
             mediaPlayer.start();
             handler.postDelayed(seekBarUpdateRunnable, SEEKBAR_UPDATE_DELAY_MILLIS);
+        }
+    }
+
+    private void loadTrackDetails(View view, Cursor c) {
+        Helper.setViewText(view, R.id.playerArtistTextView, c.getString(COL_ARTIST_NAME));
+        Helper.setViewText(view, R.id.playerAlbumTextView, c.getString(COL_ALBUM_NAME));
+        Helper.setViewText(view, R.id.playerTrackTextView, c.getString(COL_TRACK_NAME));
+        String imageUrl = c.getString(COL_ALBUM_IMAGE_URL);
+        ImageView imageView = (ImageView) view.findViewById(R.id.playerImageView);
+        if (imageUrl != null) {
+            Picasso.with(getActivity()).load(imageUrl).into(imageView);
+        } else {
+            Picasso.with(getActivity()).load(R.drawable.placeholder_128x128).into(imageView);
+        }
+    }
+
+    private void playTrackPreview(Cursor c) {
+        try {
+            mediaPlayer.setDataSource(c.getString(COL_PREVIEW_URL));
+            mediaPlayer.prepareAsync();
+        } catch (Exception e) {
+            Log.d(LOG_TAG, e.getMessage());
         }
     }
 }
