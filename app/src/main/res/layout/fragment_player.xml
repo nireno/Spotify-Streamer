@@ -69,6 +69,7 @@
         android:orientation="horizontal">
 
         <ImageButton
+            android:id="@+id/playerPrevImageButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginLeft="16dp"
@@ -86,6 +87,7 @@
             android:src="@android:drawable/ic_media_play" />
 
         <ImageButton
+            android:id="@+id/playerNextImageButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginLeft="16dp"

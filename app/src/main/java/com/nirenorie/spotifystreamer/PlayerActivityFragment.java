@@ -46,6 +46,8 @@ public class PlayerActivityFragment extends Fragment {
     private SeekBar seekBar;
     private String artistId;
     private int trackIndex;
+    private View playerFragmentView;
+    private ImageButton playButton;
 
     public PlayerActivityFragment() {
     }
@@ -62,18 +64,18 @@ public class PlayerActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         String whereClause = TrackEntry.COLUMN_ARTIST_ID + "= ?";
-        Cursor c = getActivity().getContentResolver().
+        final Cursor c = getActivity().getContentResolver().
                 query(TrackEntry.CONTENT_URI, TRACK_COLUMNS, whereClause, new String[]{artistId}, null);
         c.moveToPosition(trackIndex);
-        final View view = inflater.inflate(R.layout.fragment_player, container, false);
-        final ImageButton playButton = (ImageButton) view.findViewById(R.id.playerPlayImageButton);
+        playerFragmentView = inflater.inflate(R.layout.fragment_player, container, false);
+        playButton = (ImageButton) playerFragmentView.findViewById(R.id.playerPlayImageButton);
 
-        seekBar = (SeekBar) view.findViewById(R.id.playerSeekBar);
+        seekBar = (SeekBar) playerFragmentView.findViewById(R.id.playerSeekBar);
         seekBarUpdateRunnable = new Runnable() {
             @Override
             public void run() {
                 if (mediaPlayer.isPlaying() && !isSeeking) {
-                    SeekBar seekBar = (SeekBar) view.findViewById(R.id.playerSeekBar);
+                    SeekBar seekBar = (SeekBar) playerFragmentView.findViewById(R.id.playerSeekBar);
                     seekBar.setProgress(mediaPlayer.getCurrentPosition());
                     handler.postDelayed(this, SEEKBAR_UPDATE_DELAY_MILLIS);
                 }
@@ -110,29 +112,38 @@ public class PlayerActivityFragment extends Fragment {
             }
         });
 
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+        initializeMediaPlayer();
+        loadTrackDetails(playerFragmentView, c);
+        prepareTrackPreview(c);
+
+        ImageButton nextTrackButton = (ImageButton) playerFragmentView.findViewById(R.id.playerNextImageButton);
+        nextTrackButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onPrepared(MediaPlayer mediaPlayer) {
-                int duration = mediaPlayer.getDuration();
-                Helper.setViewText(view, R.id.playerDurationTextView,
-                        Helper.readableTrackDuration(duration));
-                seekBar.setMax(duration);
-                startPlaying();
+            public void onClick(View view) {
+                c.moveToPosition(c.getPosition() + 1);
+                if (c.isAfterLast()) {
+                    c.moveToFirst();
+                }
+                loadTrackDetails(playerFragmentView, c);
+                resetPlayer();
+                prepareTrackPreview(c);
             }
         });
 
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        ImageButton prevTrackButton = (ImageButton) playerFragmentView.findViewById(R.id.playerPrevImageButton);
+        prevTrackButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {
-                playButton.setImageResource(android.R.drawable.ic_media_play);
+            public void onClick(View view) {
+                c.moveToPosition(c.getPosition() - 1);
+                if (c.isBeforeFirst()) {
+                    c.moveToLast();
+                }
+                loadTrackDetails(playerFragmentView, c);
+                resetPlayer();
+                prepareTrackPreview(c);
             }
         });
-
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        loadTrackDetails(view, c);
-        playTrackPreview(c);
-        return view;
+        return playerFragmentView;
     }
 
     @Override
@@ -165,12 +176,41 @@ public class PlayerActivityFragment extends Fragment {
         }
     }
 
-    private void playTrackPreview(Cursor c) {
+    private void prepareTrackPreview(Cursor c) {
         try {
+            initializeMediaPlayer();
             mediaPlayer.setDataSource(c.getString(COL_PREVIEW_URL));
             mediaPlayer.prepareAsync();
         } catch (Exception e) {
             Log.d(LOG_TAG, e.getMessage());
         }
+    }
+
+    private void initializeMediaPlayer() {
+        mediaPlayer = new MediaPlayer();
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                int duration = mediaPlayer.getDuration();
+                Helper.setViewText(playerFragmentView, R.id.playerDurationTextView,
+                        Helper.readableTrackDuration(duration));
+                seekBar.setMax(duration);
+                startPlaying();
+            }
+        });
+
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                playButton.setImageResource(android.R.drawable.ic_media_play);
+            }
+        });
+
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+    }
+
+    private void resetPlayer() {
+        mediaPlayer.release();
+        seekBar.setProgress(0);
     }
 }
