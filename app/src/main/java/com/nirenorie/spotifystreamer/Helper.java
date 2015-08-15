@@ -30,7 +30,7 @@ public class Helper {
     }
 
     /* Convert millisecond duration to something of the form "m:ss" like: 3:30 */
-    public static String readableTrackDuration(int durationMillis) {
+    public static String formatTimeForPlayer(int durationMillis) {
         long durationMinutes = TimeUnit.MILLISECONDS.toMinutes(durationMillis);
         long durationSeconds = TimeUnit.MILLISECONDS.toSeconds(durationMillis)
                 - TimeUnit.MINUTES.toSeconds(durationMinutes);

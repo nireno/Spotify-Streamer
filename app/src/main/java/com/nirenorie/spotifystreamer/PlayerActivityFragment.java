@@ -76,7 +76,10 @@ public class PlayerActivityFragment extends Fragment {
             public void run() {
                 if (mediaPlayer.isPlaying() && !isSeeking) {
                     SeekBar seekBar = (SeekBar) playerFragmentView.findViewById(R.id.playerSeekBar);
-                    seekBar.setProgress(mediaPlayer.getCurrentPosition());
+                    int elapsedTime = mediaPlayer.getCurrentPosition();
+                    seekBar.setProgress(elapsedTime);
+                    Helper.setViewText(playerFragmentView, R.id.playerElapsedTextView,
+                            Helper.formatTimeForPlayer(elapsedTime));
                     handler.postDelayed(this, SEEKBAR_UPDATE_DELAY_MILLIS);
                 }
             }
@@ -193,7 +196,7 @@ public class PlayerActivityFragment extends Fragment {
             public void onPrepared(MediaPlayer mediaPlayer) {
                 int duration = mediaPlayer.getDuration();
                 Helper.setViewText(playerFragmentView, R.id.playerDurationTextView,
-                        Helper.readableTrackDuration(duration));
+                        Helper.formatTimeForPlayer(duration));
                 seekBar.setMax(duration);
                 startPlaying();
             }
