@@ -40,6 +40,8 @@ public class PlayerActivityFragment extends Fragment {
     private static final int COL_PREVIEW_URL = 4;
     private final int SEEKBAR_UPDATE_DELAY_MILLIS = 100;
     private final Handler handler = new Handler();
+    private final String SAVE_STATE_TRACK_INDEX = "saveStateTrackIndex";
+    private final String SAVE_STATE_ELAPSED = "saveStateElapsed";
     private boolean isSeeking = false;
     private Runnable seekBarUpdateRunnable;
     private MediaPlayer mediaPlayer;
@@ -48,8 +50,16 @@ public class PlayerActivityFragment extends Fragment {
     private int trackIndex;
     private View playerFragmentView;
     private ImageButton playButton;
+    private int mediaPlayerCurrentPosition = 0;
 
     public PlayerActivityFragment() {
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(SAVE_STATE_TRACK_INDEX, trackIndex);
+        outState.putInt(SAVE_STATE_ELAPSED, mediaPlayerCurrentPosition);
     }
 
     @Override
@@ -57,7 +67,12 @@ public class PlayerActivityFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Intent i = getActivity().getIntent();
         artistId = i.getStringExtra(TracksActivityFragment.EXTRA_ARTIST_ID);
-        trackIndex = i.getIntExtra(TracksActivityFragment.EXTRA_POSITION, 0);
+        boolean hasSavedState = savedInstanceState != null;
+        if (hasSavedState && savedInstanceState.containsKey(SAVE_STATE_TRACK_INDEX)) {
+            trackIndex = savedInstanceState.getInt(SAVE_STATE_TRACK_INDEX);
+        } else {
+            trackIndex = i.getIntExtra(TracksActivityFragment.EXTRA_POSITION, 0);
+        }
     }
 
     @Override
@@ -97,8 +112,8 @@ public class PlayerActivityFragment extends Fragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                isSeeking = false;
                 mediaPlayer.seekTo(seekBar.getProgress());
+                isSeeking = false;
                 handler.postDelayed(seekBarUpdateRunnable, SEEKBAR_UPDATE_DELAY_MILLIS);
             }
         });
@@ -115,9 +130,13 @@ public class PlayerActivityFragment extends Fragment {
             }
         });
 
-        initializeMediaPlayer();
         loadTrackDetails(playerFragmentView, c);
-        prepareTrackPreview(c);
+        if (savedInstanceState != null && savedInstanceState.containsKey(SAVE_STATE_ELAPSED)) {
+            initializeMediaPlayer(savedInstanceState.getInt(SAVE_STATE_ELAPSED));
+        } else {
+            initializeMediaPlayer(0);
+        }
+        prepareMediaPlayer(c);
 
         ImageButton nextTrackButton = (ImageButton) playerFragmentView.findViewById(R.id.playerNextImageButton);
         nextTrackButton.setOnClickListener(new View.OnClickListener() {
@@ -127,9 +146,11 @@ public class PlayerActivityFragment extends Fragment {
                 if (c.isAfterLast()) {
                     c.moveToFirst();
                 }
+                trackIndex = c.getPosition();
                 loadTrackDetails(playerFragmentView, c);
                 resetPlayer();
-                prepareTrackPreview(c);
+                initializeMediaPlayer(0);
+                prepareMediaPlayer(c);
             }
         });
 
@@ -141,9 +162,11 @@ public class PlayerActivityFragment extends Fragment {
                 if (c.isBeforeFirst()) {
                     c.moveToLast();
                 }
+                trackIndex = c.getPosition();
                 loadTrackDetails(playerFragmentView, c);
                 resetPlayer();
-                prepareTrackPreview(c);
+                initializeMediaPlayer(0);
+                prepareMediaPlayer(c);
             }
         });
         return playerFragmentView;
@@ -153,7 +176,8 @@ public class PlayerActivityFragment extends Fragment {
     public void onPause() {
         super.onPause();
         handler.removeCallbacks(seekBarUpdateRunnable);
-        mediaPlayer.release();
+        mediaPlayerCurrentPosition = mediaPlayer.getCurrentPosition();
+        resetPlayer();
     }
 
     private void startPlaying() {
@@ -179,9 +203,8 @@ public class PlayerActivityFragment extends Fragment {
         }
     }
 
-    private void prepareTrackPreview(Cursor c) {
+    private void prepareMediaPlayer(Cursor c) {
         try {
-            initializeMediaPlayer();
             mediaPlayer.setDataSource(c.getString(COL_PREVIEW_URL));
             mediaPlayer.prepareAsync();
         } catch (Exception e) {
@@ -189,7 +212,7 @@ public class PlayerActivityFragment extends Fragment {
         }
     }
 
-    private void initializeMediaPlayer() {
+    private void initializeMediaPlayer(final int elapsed) {
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
@@ -198,6 +221,7 @@ public class PlayerActivityFragment extends Fragment {
                 Helper.setViewText(playerFragmentView, R.id.playerDurationTextView,
                         Helper.formatTimeForPlayer(duration));
                 seekBar.setMax(duration);
+                mediaPlayer.seekTo(elapsed);
                 startPlaying();
             }
         });
@@ -214,6 +238,7 @@ public class PlayerActivityFragment extends Fragment {
 
     private void resetPlayer() {
         mediaPlayer.release();
+        mediaPlayer = null;
         seekBar.setProgress(0);
     }
 }
