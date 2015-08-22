@@ -5,11 +5,24 @@ import android.support.v7.app.AppCompatActivity;
 
 
 public class TracksActivity extends AppCompatActivity {
+    private static final String ARTIST_EXTRA = "EXART";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tracks);
+        if (savedInstanceState == null) {
+            Bundle arguments = new Bundle();
+            arguments.putString(TracksActivityFragment.ARTIST_ARG,
+                    getIntent().getStringExtra(ARTIST_EXTRA));
+
+            TracksActivityFragment fragment = new TracksActivityFragment();
+            fragment.setArguments(arguments);
+
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.top_tracks_container, fragment)
+                    .commit();
+        }
     }
 
 

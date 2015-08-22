@@ -44,10 +44,9 @@ import retrofit.client.Response;
 public class TracksActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     public static final String EXTRA_ARTIST_ID = "extraArtistId";
     public static final String EXTRA_POSITION = "extraPosition";
+    public static final String ARTIST_ARG = "artist";
     private static final int TOP_TRACKS_LOADER = 0;
-    private final String LOG_TAG = this.getClass().getSimpleName();
     private final String CLASS_TAG = this.getClass().getSimpleName();
-
     private String artistId = "";
     private int IMAGE_SIZE;
     private TrackListAdapter adapter;
@@ -70,15 +69,18 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         adapter = new TrackListAdapter(getActivity(), null, 0);
-        Intent intent = getActivity().getIntent();
-        artistId = intent.getStringExtra(Intent.EXTRA_TEXT);
         IMAGE_SIZE = Integer.parseInt(getString(R.string.thumbnail_size));
+        Bundle args = getArguments();
+        if (args != null) {
+            artistId = args.getString(ARTIST_ARG);
+            getLoaderManager().restartLoader(TOP_TRACKS_LOADER, null, this);
+        }
     }
 
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_tracks, container);
+        view = inflater.inflate(R.layout.fragment_tracks, container, false);
         tracksListView = (ListView) view.findViewById(R.id.tracksListView);
         tracksListView.setAdapter(adapter);
         emptyListView = (TextView) view.findViewById(R.id.noTracksTextView);
@@ -92,7 +94,6 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
                 startActivity(intent);
             }
         });
-        getLoaderManager().restartLoader(TOP_TRACKS_LOADER, null, this);
         return view;
     }
 

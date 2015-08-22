@@ -2,17 +2,31 @@ package com.nirenorie.spotifystreamer;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TRACKS_FRAGMENT_TAG = "TRACKS";
+    private static boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (findViewById(R.id.top_tracks_container) != null) {
+            mTwoPane = true;
+            if (savedInstanceState == null) {
+                Fragment f = new TracksActivityFragment();
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.top_tracks_container, f, TRACKS_FRAGMENT_TAG)
+                        .commit();
+            }
+        } else {
+            mTwoPane = false;
+        }
     }
 
 
