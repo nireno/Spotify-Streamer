@@ -17,8 +17,8 @@ public class PlayerActivity extends AppCompatActivity {
             Bundle arguments = new Bundle();
             arguments.putString(PlayerActivityFragment.ARG_ARTIST,
                     intent.getStringExtra(EXTRA_ARTIST_ID));
-            arguments.putString(PlayerActivityFragment.ARG_TRACK_INDEX,
-                    intent.getStringExtra(EXTRA_TRACK_INDEX));
+            arguments.putInt(PlayerActivityFragment.ARG_TRACK_INDEX,
+                    intent.getIntExtra(EXTRA_TRACK_INDEX, 0));
 
             PlayerActivityFragment fragment = new PlayerActivityFragment();
             fragment.setArguments(arguments);
