@@ -1,14 +1,32 @@
 package com.nirenorie.spotifystreamer;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 public class PlayerActivity extends AppCompatActivity {
+    public static final String EXTRA_ARTIST_ID = "ARTIST";
+    public static final String EXTRA_TRACK_INDEX = "TRACK";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
+        if (savedInstanceState == null) {
+            Intent intent = getIntent();
+            Bundle arguments = new Bundle();
+            arguments.putString(PlayerActivityFragment.ARG_ARTIST,
+                    intent.getStringExtra(EXTRA_ARTIST_ID));
+            arguments.putString(PlayerActivityFragment.ARG_TRACK_INDEX,
+                    intent.getStringExtra(EXTRA_TRACK_INDEX));
+
+            PlayerActivityFragment fragment = new PlayerActivityFragment();
+            fragment.setArguments(arguments);
+
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.player_container, fragment)
+                    .commit();
+        }
     }
 
 

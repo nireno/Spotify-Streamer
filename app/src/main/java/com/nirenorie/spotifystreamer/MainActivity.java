@@ -3,12 +3,14 @@ package com.nirenorie.spotifystreamer;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends AppCompatActivity implements MainActivityFragment.Callback {
+public class MainActivity extends AppCompatActivity
+        implements MainActivityFragment.Callback, TracksActivityFragment.Callback {
     private static final String TRACKS_FRAGMENT_TAG = "TRACKS";
     private static boolean mTwoPane;
 
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
 
 
     @Override
-    public void onItemClick(String artistId) {
+    public void onArtistItemClick(String artistId) {
         if (mTwoPane) {
             Bundle args = new Bundle();
             args.putString(TracksActivityFragment.ARTIST_ARG, artistId);
@@ -70,5 +72,12 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
             startActivity(intent);
         }
 
+    }
+
+    @Override
+    public void onTrackItemClick(String artistId, int trackIndex) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        PlayerActivityFragment f = PlayerActivityFragment.newInstance(artistId, trackIndex);
+        f.show(ft, PlayerActivityFragment.FRAGMENT_TAG);
     }
 }

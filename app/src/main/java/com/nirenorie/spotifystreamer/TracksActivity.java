@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 
-public class TracksActivity extends AppCompatActivity {
+public class TracksActivity extends AppCompatActivity implements TracksActivityFragment.Callback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,6 +22,14 @@ public class TracksActivity extends AppCompatActivity {
                     .add(R.id.top_tracks_container, fragment)
                     .commit();
         }
+    }
+
+    @Override
+    public void onTrackItemClick(String artistId, int trackIndex) {
+        Intent intent = new Intent(this, PlayerActivity.class);
+        intent.putExtra(PlayerActivity.EXTRA_ARTIST_ID, artistId);
+        intent.putExtra(PlayerActivity.EXTRA_TRACK_INDEX, trackIndex);
+        startActivity(intent);
     }
 
 

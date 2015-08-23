@@ -68,7 +68,7 @@ public class MainActivityFragment extends Fragment {
         listViewArtists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                ((Callback) getActivity()).onItemClick(adapter.getItem(i).id);
+                ((Callback) getActivity()).onArtistItemClick(adapter.getItem(i).id);
             }
         });
 
@@ -127,7 +127,7 @@ public class MainActivityFragment extends Fragment {
     }
 
     public interface Callback {
-        void onItemClick(String artistId);
+        void onArtistItemClick(String artistId);
     }
 
     private class ArtistListAdapter extends ArrayAdapter<SpotifyArtist> {

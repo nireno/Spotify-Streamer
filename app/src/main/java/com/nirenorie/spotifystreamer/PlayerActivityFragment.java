@@ -1,13 +1,12 @@
 package com.nirenorie.spotifystreamer;
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,8 +21,10 @@ import com.squareup.picasso.Picasso;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class PlayerActivityFragment extends Fragment {
-    private static final String LOG_TAG = "PlayerActivityFragment";
+public class PlayerActivityFragment extends DialogFragment {
+    public static final String ARG_ARTIST = "A";
+    public static final String ARG_TRACK_INDEX = "T";
+    public static final String FRAGMENT_TAG = "PLAYER";
     private static final String[] TRACK_COLUMNS = {
             TrackEntry.COLUMN_ARTIST_NAME,
             TrackEntry.COLUMN_ALBUM_NAME,
@@ -38,6 +39,7 @@ public class PlayerActivityFragment extends Fragment {
     private static final int COL_TRACK_NAME = 2;
     private static final int COL_ALBUM_IMAGE_URL = 3;
     private static final int COL_PREVIEW_URL = 4;
+    public final String LOG_TAG = this.getClass().getSimpleName();
     private final int SEEKBAR_UPDATE_DELAY_MILLIS = 100;
     private final Handler handler = new Handler();
     private final String SAVE_STATE_TRACK_INDEX = "saveStateTrackIndex";
@@ -55,6 +57,15 @@ public class PlayerActivityFragment extends Fragment {
     public PlayerActivityFragment() {
     }
 
+    public static PlayerActivityFragment newInstance(String artistId, int trackIndex) {
+        PlayerActivityFragment f = new PlayerActivityFragment();
+        Bundle b = new Bundle();
+        b.putString(ARG_ARTIST, artistId);
+        b.putInt(ARG_TRACK_INDEX, trackIndex);
+        f.setArguments(b);
+        return f;
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -65,13 +76,13 @@ public class PlayerActivityFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Intent i = getActivity().getIntent();
-        artistId = i.getStringExtra(TracksActivityFragment.EXTRA_ARTIST_ID);
+        Bundle args = getArguments();
+        artistId = args.getString(ARG_ARTIST);
         boolean hasSavedState = savedInstanceState != null;
         if (hasSavedState && savedInstanceState.containsKey(SAVE_STATE_TRACK_INDEX)) {
             trackIndex = savedInstanceState.getInt(SAVE_STATE_TRACK_INDEX);
         } else {
-            trackIndex = i.getIntExtra(TracksActivityFragment.EXTRA_POSITION, 0);
+            trackIndex = args.getInt(ARG_TRACK_INDEX, 0);
         }
     }
 

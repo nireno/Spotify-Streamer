@@ -3,7 +3,6 @@ package com.nirenorie.spotifystreamer;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -33,7 +32,6 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
-import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
@@ -42,8 +40,6 @@ import retrofit.client.Response;
  * A placeholder fragment containing a simple view.
  */
 public class TracksActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
-    public static final String EXTRA_ARTIST_ID = "extraArtistId";
-    public static final String EXTRA_POSITION = "extraPosition";
     public static final String ARTIST_ARG = "artist";
     private static final int TOP_TRACKS_LOADER = 0;
     private final String CLASS_TAG = this.getClass().getSimpleName();
@@ -87,11 +83,8 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
         tracksListView.setEmptyView(emptyListView);
         tracksListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(getActivity(), PlayerActivity.class);
-                intent.putExtra(EXTRA_ARTIST_ID, artistId);
-                intent.putExtra(EXTRA_POSITION, i);
-                startActivity(intent);
+            public void onItemClick(AdapterView<?> adapterView, View view, int trackIndex, long l) {
+                ((Callback) getActivity()).onTrackItemClick(artistId, trackIndex);
             }
         });
         return view;
@@ -106,7 +99,7 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
         String countryCode = p.getString(getString(R.string.pref_country_key), getString(R.string.pref_country_default));
 
         options.put("country", countryCode);
-        service.getArtistTopTrack(artistId, options, new Callback<Tracks>() {
+        service.getArtistTopTrack(artistId, options, new retrofit.Callback<Tracks>() {
             @Override
             public void success(Tracks tracks, Response response) {
                 topTracks.clear();
@@ -163,6 +156,10 @@ public class TracksActivityFragment extends Fragment implements LoaderManager.Lo
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         adapter.swapCursor(null);
+    }
+
+    public interface Callback {
+        void onTrackItemClick(String artistId, int trackIndex);
     }
 
     private class TrackListAdapter extends CursorAdapter {
