@@ -8,7 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainActivityFragment.Callback {
     private static final String TRACKS_FRAGMENT_TAG = "TRACKS";
     private static boolean mTwoPane;
 
@@ -51,5 +51,24 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    @Override
+    public void onItemClick(String artistId) {
+        if (mTwoPane) {
+            Bundle args = new Bundle();
+            args.putString(TracksActivityFragment.ARTIST_ARG, artistId);
+            Fragment f = new TracksActivityFragment();
+            f.setArguments(args);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.top_tracks_container, f, TRACKS_FRAGMENT_TAG)
+                    .commit();
+        } else {
+            Intent intent = new Intent(this, TracksActivity.class);
+            intent.putExtra(Intent.EXTRA_TEXT, artistId);
+            startActivity(intent);
+        }
+
     }
 }

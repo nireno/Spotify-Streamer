@@ -1,7 +1,6 @@
 package com.nirenorie.spotifystreamer;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -27,7 +26,6 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
-import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
@@ -70,9 +68,7 @@ public class MainActivityFragment extends Fragment {
         listViewArtists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(getActivity(), TracksActivity.class);
-                intent.putExtra(Intent.EXTRA_TEXT, adapter.getItem(i).id);
-                startActivity(intent);
+                ((Callback) getActivity()).onItemClick(adapter.getItem(i).id);
             }
         });
 
@@ -102,7 +98,7 @@ public class MainActivityFragment extends Fragment {
         SpotifyApi api = new SpotifyApi();
         SpotifyService service = api.getService();
         if (!name.equals("")) {
-            service.searchArtists(name, new Callback<ArtistsPager>() {
+            service.searchArtists(name, new retrofit.Callback<ArtistsPager>() {
                 @Override
                 public void success(ArtistsPager artistsPager, Response response) {
                     artists.clear();
@@ -128,6 +124,10 @@ public class MainActivityFragment extends Fragment {
                 }
             });
         }
+    }
+
+    public interface Callback {
+        void onItemClick(String artistId);
     }
 
     private class ArtistListAdapter extends ArrayAdapter<SpotifyArtist> {

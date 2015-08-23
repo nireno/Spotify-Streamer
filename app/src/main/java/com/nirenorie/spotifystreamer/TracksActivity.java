@@ -1,12 +1,11 @@
 package com.nirenorie.spotifystreamer;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 
 public class TracksActivity extends AppCompatActivity {
-    private static final String ARTIST_EXTRA = "EXART";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -14,7 +13,7 @@ public class TracksActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             Bundle arguments = new Bundle();
             arguments.putString(TracksActivityFragment.ARTIST_ARG,
-                    getIntent().getStringExtra(ARTIST_EXTRA));
+                    getIntent().getStringExtra(Intent.EXTRA_TEXT));
 
             TracksActivityFragment fragment = new TracksActivityFragment();
             fragment.setArguments(arguments);
